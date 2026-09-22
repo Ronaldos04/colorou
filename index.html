@@ -11,11 +11,1229 @@
 
   <title>Coloroulette</title>
 
-    <link rel="stylesheet" href="style.css">
+  <style>
 
+    * {
+      box-sizing: border-box;
+    }
+
+    html,
+    body {
+      width: 100%;
+      height: 100%;
+    }
+
+
+    /* =============================
+       PAGE
+    ============================= */
+
+    body {
+      margin: 0;
+
+      width: 100%;
+      min-height: 100vh;
+      min-height: 100dvh;
+
+      background: #080808;
+      color: white;
+
+      font-family: Arial, sans-serif;
+
+      overflow: hidden;
+
+      -webkit-tap-highlight-color: transparent;
+      user-select: none;
+      -webkit-user-select: none;
+    }
+
+
+    /* =============================
+       TAP-TO-START SCREEN
+    ============================= */
+
+    .start-screen {
+      position: fixed;
+      inset: 0;
+
+      z-index: 500;
+
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+
+      background: #080808;
+
+      cursor: pointer;
+
+      transition:
+        opacity 450ms ease;
+    }
+
+    .start-screen.hidden {
+      opacity: 0;
+      pointer-events: none;
+    }
+
+
+    .intro-cat {
+      width: min(78vw, 390px);
+      height: min(42vh, 330px);
+
+      display: flex;
+      justify-content: center;
+      align-items: center;
+
+      animation:
+        introCatFloat
+        3s
+        ease-in-out
+        infinite;
+    }
+
+
+    .intro-cat img {
+      width: 100%;
+      height: 100%;
+
+      object-fit: contain;
+
+      filter:
+        drop-shadow(
+          0 0 14px
+          rgba(255, 190, 60, 0.42)
+        );
+    }
+
+
+    @keyframes introCatFloat {
+
+      0%,
+      100% {
+        transform: translateY(0);
+      }
+
+      50% {
+        transform: translateY(-6px);
+      }
+
+    }
+
+
+    .start-title {
+      margin-top: 8px;
+
+      color: #e9bd59;
+
+      font-size:
+        clamp(
+          30px,
+          9vw,
+          46px
+        );
+
+      font-weight: bold;
+
+      letter-spacing: 5px;
+
+      text-align: center;
+
+      text-shadow:
+        0 0 10px
+        rgba(255, 193, 61, 0.50);
+    }
+
+
+    .tap-text {
+      margin-top: 22px;
+
+      color: #fff4cf;
+
+      font-size: 15px;
+
+      letter-spacing: 3px;
+
+      opacity: 0.72;
+
+      animation:
+        tapPulse
+        1.7s
+        ease-in-out
+        infinite;
+    }
+
+
+    @keyframes tapPulse {
+
+      0%,
+      100% {
+        opacity: 0.42;
+      }
+
+      50% {
+        opacity: 1;
+      }
+
+    }
+
+
+    /* =============================
+       MAIN SHOW
+    ============================= */
+
+    .show {
+      position: fixed;
+      inset: 0;
+
+      z-index: 20;
+
+      overflow: hidden;
+
+      opacity: 0;
+
+      pointer-events: none;
+
+      transition:
+        opacity 400ms ease;
+    }
+
+
+    .show.active {
+      opacity: 1;
+    }
+
+
+    /* =============================
+       ONE CONTINUOUS CAT
+
+       IMPORTANT:
+       This is ONE cat.
+
+       It does not get replaced,
+       hidden or faded during the
+       welcome -> roulette transition.
+    ============================= */
+
+    .show-cat {
+      position: absolute;
+
+      left: 50%;
+      top: 50%;
+
+      z-index: 60;
+
+      width: min(78vw, 390px);
+      height: min(42vh, 330px);
+
+      display: flex;
+      justify-content: center;
+      align-items: center;
+
+      transform:
+        translate(-50%, -65%);
+
+      will-change:
+        top,
+        width,
+        height,
+        transform;
+
+      transition:
+        top 1400ms
+        cubic-bezier(
+          0.16,
+          1,
+          0.3,
+          1
+        ),
+
+        width 1400ms
+        cubic-bezier(
+          0.16,
+          1,
+          0.3,
+          1
+        ),
+
+        height 1400ms
+        cubic-bezier(
+          0.16,
+          1,
+          0.3,
+          1
+        ),
+
+        transform 1400ms
+        cubic-bezier(
+          0.16,
+          1,
+          0.3,
+          1
+        );
+    }
+
+
+    .show-cat img {
+      width: 100%;
+      height: 100%;
+
+      object-fit: contain;
+
+      filter:
+        drop-shadow(
+          0 0 14px
+          rgba(255, 190, 60, 0.40)
+        );
+    }
+
+
+    /*
+       Final cat position.
+
+       Same cat.
+       It simply travels here.
+    */
+
+    .show-cat.game-position {
+      top: 10%;
+
+      width: min(76vw, 330px);
+      height: min(23vh, 190px);
+
+      transform:
+        translateX(-50%);
+    }
+
+
+    /* =============================
+       WELCOME TEXT
+    ============================= */
+
+    .welcome-copy {
+      position: absolute;
+
+      left: 50%;
+      top: 67%;
+
+      z-index: 55;
+
+      width: 92%;
+
+      transform:
+        translateX(-50%);
+
+      text-align: center;
+
+      opacity: 0;
+
+      transition:
+        opacity 600ms ease,
+        transform 600ms ease;
+    }
+
+
+    .welcome-copy.visible {
+      opacity: 1;
+    }
+
+
+    .welcome-copy.leaving {
+      opacity: 0;
+
+      transform:
+        translate(-50%, 12px);
+    }
+
+
+    .welcome-title {
+      color: #e9bd59;
+
+      font-size:
+        clamp(
+          25px,
+          7.5vw,
+          40px
+        );
+
+      font-weight: bold;
+
+      letter-spacing: 4px;
+
+      text-shadow:
+        0 0 10px
+        rgba(255, 193, 61, 0.45);
+    }
+
+
+    .welcome-subtitle {
+      margin-top: 13px;
+
+      color: #fff4cf;
+
+      font-size:
+        clamp(
+          15px,
+          4.5vw,
+          20px
+        );
+
+      letter-spacing: 1.5px;
+
+      opacity: 0.9;
+    }
+
+
+    /* =============================
+       GAME STAGE
+    ============================= */
+
+    .game-stage {
+      position: absolute;
+
+      left: 50%;
+      top: 30%;
+
+      z-index: 30;
+
+      width: 100%;
+
+      transform:
+        translateX(-50%);
+
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+
+      opacity: 0;
+
+      pointer-events: none;
+
+      transition:
+        opacity 850ms ease;
+    }
+
+
+    .game-stage.visible {
+      opacity: 1;
+    }
+
+
+    /* =============================
+       GOLD CASINO PANEL
+    ============================= */
+
+    .casino-panel {
+      position: relative;
+
+      padding:
+        22px
+        25px
+        28px;
+
+      border:
+        4px solid
+        #c9962e;
+
+      border-radius: 22px;
+
+      background:
+        linear-gradient(
+          145deg,
+          #171006,
+          #050505 45%,
+          #171006
+        );
+
+      box-shadow:
+        0 0 0 2px #6f4810,
+        0 0 20px
+        rgba(255, 190, 60, 0.25),
+        inset 0 0 25px
+        rgba(255, 190, 60, 0.08);
+
+      transform:
+        translateY(24px)
+        scale(0.96);
+
+      transition:
+        transform 1000ms
+        cubic-bezier(
+          0.16,
+          1,
+          0.3,
+          1
+        );
+    }
+
+
+    .game-stage.visible
+    .casino-panel {
+      transform:
+        translateY(0)
+        scale(1);
+    }
+
+
+    .casino-panel::before {
+      content: "";
+
+      position: absolute;
+      inset: 7px;
+
+      border:
+        1px solid
+        rgba(255, 210, 100, 0.45);
+
+      border-radius: 15px;
+
+      pointer-events: none;
+    }
+
+
+    /* =============================
+       RGB TITLE
+    ============================= */
+
+    h1 {
+      letter-spacing: 6px;
+    }
+
+
+    .casino-panel h1 {
+      margin:
+        0
+        0
+        28px;
+
+      text-align: center;
+
+      color: #e9bd59;
+
+      text-shadow:
+        0 0 8px
+        rgba(255, 193, 61, 0.45);
+    }
+
+
+    /* =============================
+       THREE REELS
+    ============================= */
+
+    .machine {
+      display: flex;
+
+      gap: 15px;
+    }
+
+
+    .reel-column {
+      text-align: center;
+    }
+
+
+    .label {
+      margin-bottom: 10px;
+
+      font-size: 18px;
+      font-weight: bold;
+    }
+
+
+    /* =============================
+       REEL WINDOW
+    ============================= */
+
+    .reel {
+      position: relative;
+
+      width: 90px;
+      height: 150px;
+
+      overflow: hidden;
+
+      background: #f5edda;
+
+      border:
+        5px solid
+        #b77a16;
+
+      border-radius: 12px;
+
+      color: #171008;
+
+      box-shadow:
+        0 0 0 2px #5e3908,
+        0 0 0 3px #e5b94f,
+        inset 0 0 10px
+        rgba(110, 70, 10, 0.18),
+        0 4px 8px
+        rgba(0, 0, 0, 0.55);
+    }
+
+
+    /* =============================
+       MOVING NUMBER STRIP
+    ============================= */
+
+    .reel-strip {
+      position: absolute;
+
+      left: 0;
+      top: 0;
+
+      width: 100%;
+
+      will-change:
+        transform,
+        filter;
+    }
+
+
+    .reel-number {
+      width: 100%;
+      height: 50px;
+
+      display: flex;
+      align-items: center;
+      justify-content: center;
+
+      font-size: 34px;
+      font-weight: bold;
+
+      line-height: 50px;
+    }
+
+
+    /* =============================
+       CENTER SELECTION AREA
+    ============================= */
+
+    .selection-box {
+      position: absolute;
+
+      left: 4px;
+      right: 4px;
+
+      top: 50px;
+      height: 50px;
+
+      border-top:
+        2px solid
+        rgba(90, 55, 5, 0.35);
+
+      border-bottom:
+        2px solid
+        rgba(90, 55, 5, 0.35);
+
+      z-index: 10;
+
+      pointer-events: none;
+    }
+
+
+    /* =============================
+       TOP / BOTTOM FADES
+    ============================= */
+
+    .fade-top,
+    .fade-bottom {
+      position: absolute;
+
+      left: 0;
+
+      width: 100%;
+      height: 50px;
+
+      z-index: 8;
+
+      pointer-events: none;
+    }
+
+
+    .fade-top {
+      top: 0;
+
+      background:
+        linear-gradient(
+          to bottom,
+          rgba(245, 237, 218, 0.97),
+          rgba(245, 237, 218, 0)
+        );
+    }
+
+
+    .fade-bottom {
+      bottom: 0;
+
+      background:
+        linear-gradient(
+          to top,
+          rgba(245, 237, 218, 0.97),
+          rgba(245, 237, 218, 0)
+        );
+    }
+
+
+    /* =============================
+       RUBY ROLL BUTTON
+    ============================= */
+
+    button {
+      position: relative;
+
+      margin-top: 50px;
+
+      min-width: 150px;
+
+      padding:
+        18px
+        38px;
+
+      border:
+        4px solid
+        #d7a62d;
+
+      border-radius: 50px;
+
+      background:
+        radial-gradient(
+          circle at 50% 25%,
+          #ff3b32 0%,
+          #d50909 32%,
+          #9e0000 68%,
+          #650000 100%
+        );
+
+      color: #fff8df;
+
+      font-size: 20px;
+      font-weight: bold;
+
+      letter-spacing: 1px;
+
+      text-shadow:
+        0 1px 2px #5c0000,
+        0 0 5px
+        rgba(255, 255, 255, 0.25);
+
+      box-shadow:
+        0 0 0 2px #654008,
+        0 6px 0 #704400,
+        0 9px 12px
+        rgba(0, 0, 0, 0.7),
+        0 0 18px
+        rgba(220, 20, 10, 0.35),
+        inset 0 3px 4px
+        rgba(255, 255, 255, 0.35),
+        inset 0 -5px 8px
+        rgba(80, 0, 0, 0.45);
+
+      cursor: default;
+
+      transition:
+        transform 80ms ease,
+        box-shadow 80ms ease,
+        filter 150ms ease;
+
+      -webkit-tap-highlight-color:
+        transparent;
+    }
+
+
+    /* Glass highlight */
+
+    button::before {
+      content: "";
+
+      position: absolute;
+
+      top: 5px;
+      left: 15%;
+
+      width: 70%;
+      height: 35%;
+
+      border-radius: 50%;
+
+      background:
+        linear-gradient(
+          to bottom,
+          rgba(255, 255, 255, 0.32),
+          rgba(255, 255, 255, 0)
+        );
+
+      pointer-events: none;
+    }
+
+
+    /* =============================
+       AUTOMATIC BUTTON PRESS
+    ============================= */
+
+    button.pressed {
+      transform:
+        translateY(5px);
+
+      filter:
+        brightness(1.12);
+
+      box-shadow:
+        0 0 0 2px #654008,
+        0 1px 0 #704400,
+        0 3px 6px
+        rgba(0, 0, 0, 0.7),
+        0 0 22px
+        rgba(255, 45, 20, 0.5),
+        inset 0 3px 7px
+        rgba(90, 0, 0, 0.45);
+    }
+
+
+    /* =============================
+       COUNTDOWN CASINO PLAQUE
+    ============================= */
+
+    .countdown {
+      position: fixed;
+
+      left: 50%;
+      top: 50%;
+
+      z-index: 900;
+
+      width: 270px;
+      min-height: 125px;
+
+      transform:
+        translate(-50%, -50%)
+        scale(0.94);
+
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+
+      padding:
+        15px
+        20px;
+
+      text-align: center;
+
+      pointer-events: none;
+
+      opacity: 0;
+
+      background:
+        linear-gradient(
+          145deg,
+          rgba(25, 17, 5, 0.97),
+          rgba(4, 4, 4, 0.98) 50%,
+          rgba(25, 17, 5, 0.97)
+        );
+
+      border:
+        3px solid
+        #c9962e;
+
+      border-radius: 18px;
+
+      box-shadow:
+        0 0 0 2px #6f4810,
+        0 0 22px
+        rgba(255, 190, 60, 0.35),
+        inset 0 0 18px
+        rgba(255, 190, 60, 0.08);
+
+      transition:
+        opacity 250ms ease,
+        transform 250ms ease;
+    }
+
+
+    .countdown.active {
+      opacity: 1;
+
+      transform:
+        translate(-50%, -50%)
+        scale(1);
+    }
+
+
+    /* Inner gold line */
+
+    .countdown::before {
+      content: "";
+
+      position: absolute;
+      inset: 6px;
+
+      border:
+        1px solid
+        rgba(255, 210, 100, 0.45);
+
+      border-radius: 11px;
+
+      pointer-events: none;
+    }
+
+
+    .countdown-title {
+      position: relative;
+
+      z-index: 2;
+
+      color: #e9bd59;
+
+      font-size: 21px;
+      font-weight: bold;
+
+      letter-spacing: 4px;
+
+      text-shadow:
+        0 0 8px
+        rgba(255, 193, 61, 0.55),
+        0 2px 5px
+        rgba(0, 0, 0, 0.9);
+    }
+
+
+    .countdown-number {
+      position: relative;
+
+      z-index: 2;
+
+      margin-top: 8px;
+
+      color: #fff4cf;
+
+      font-size: 58px;
+      font-weight: bold;
+
+      line-height: 1;
+
+      text-shadow:
+        0 0 10px
+        rgba(255, 193, 61, 0.65),
+        0 3px 8px
+        rgba(0, 0, 0, 0.9);
+    }
+
+
+    .countdown-number.pop {
+      animation:
+        countdownPop
+        350ms
+        ease-out;
+    }
+
+
+    @keyframes countdownPop {
+
+      0% {
+        opacity: 0;
+
+        transform:
+          scale(1.35);
+      }
+
+      60% {
+        opacity: 1;
+
+        transform:
+          scale(0.95);
+      }
+
+      100% {
+        opacity: 1;
+
+        transform:
+          scale(1);
+      }
+
+    }
+
+
+    /* =============================
+       FINAL REVEAL STAGE
+
+       Reels -> black screen ->
+       centered RGB value ->
+       tiny color dot ->
+       slow circular expansion
+    ============================= */
+
+    .reveal-black {
+      position: fixed;
+      inset: 0;
+
+      z-index: 999;
+
+      background: #000;
+
+      opacity: 0;
+
+      pointer-events: none;
+
+      transition:
+        opacity 900ms ease;
+    }
+
+
+    .reveal-black.active {
+      opacity: 1;
+    }
+
+
+    .color-reveal {
+      position: fixed;
+
+      left: 50%;
+      top: 50%;
+
+      width: 12px;
+      height: 12px;
+
+      border-radius: 50%;
+
+      transform:
+        translate(-50%, -50%)
+        scale(0);
+
+      z-index: 1000;
+
+      pointer-events: none;
+
+      transition:
+        transform 8000ms
+        cubic-bezier(
+          0.22,
+          0.61,
+          0.36,
+          1
+        );
+    }
+
+
+    .color-reveal.dot {
+      transform:
+        translate(-50%, -50%)
+        scale(1);
+    }
+
+
+    .color-reveal.active {
+      transform:
+        translate(-50%, -50%)
+        scale(180);
+    }
+
+
+    /* =============================
+       RGB RESULT TEXT
+    ============================= */
+
+    .reveal-rgb {
+      position: fixed;
+
+      left: 50vw;
+      top: 50vh;
+
+      z-index: 1001;
+
+      transform:
+        translate(-50%, -50%)
+        scale(0.96);
+
+      white-space: nowrap;
+
+      font-size:
+        clamp(
+          22px,
+          7vw,
+          30px
+        );
+
+      font-weight: bold;
+
+      letter-spacing: 3px;
+
+      color: white;
+
+      text-shadow:
+        0 2px 5px
+        rgba(0, 0, 0, 0.95),
+        0 0 12px
+        rgba(0, 0, 0, 0.75);
+
+      opacity: 0;
+
+      pointer-events: none;
+
+      transition:
+        opacity 700ms ease,
+        transform 700ms ease;
+    }
+
+
+    .reveal-rgb.active {
+      opacity: 1;
+
+      transform:
+        translate(-50%, -50%)
+        scale(1);
+    }
+
+
+    /* =============================
+       PICTURES MESSAGE
+
+       Appears subtly underneath the
+       RGB result while the color is
+       expanding across the screen.
+    ============================= */
+
+    .pictures-message {
+      position: fixed;
+
+      left: 50vw;
+      top: calc(50vh + 52px);
+
+      z-index: 1002;
+
+      transform:
+        translate(-50%, -50%)
+        scale(0.98);
+
+      width: 90%;
+
+      text-align: center;
+      white-space: nowrap;
+
+      color: white;
+
+      font-size:
+        clamp(
+          15px,
+          4.4vw,
+          19px
+        );
+
+      font-weight: bold;
+
+      letter-spacing: 2px;
+
+      text-shadow:
+        0 2px 5px
+        rgba(0, 0, 0, 0.95),
+        0 0 12px
+        rgba(0, 0, 0, 0.75);
+
+      opacity: 0;
+
+      pointer-events: none;
+
+      transition:
+        opacity 1800ms ease,
+        transform 1800ms ease;
+    }
+
+
+    .pictures-message.active {
+      opacity: 0.88;
+
+      transform:
+        translate(-50%, -50%)
+        scale(1);
+    }
+
+
+    /* =============================
+       SMALL PHONE ADJUSTMENTS
+    ============================= */
+
+    @media (
+      max-width: 390px
+    ) {
+
+      .casino-panel {
+        padding:
+          20px
+          18px
+          25px;
+      }
+
+
+      .machine {
+        gap: 11px;
+      }
+
+
+      .reel {
+        width: 82px;
+        height: 150px;
+      }
+
+
+      .reel-number {
+        font-size: 31px;
+      }
+
+
+      .countdown {
+        width: 250px;
+      }
+
+    }
+
+
+    /* =============================
+       SHORT PHONE SCREENS
+    ============================= */
+
+    @media (
+      max-height: 720px
+    ) {
+
+      .show-cat.game-position {
+        top: 3%;
+
+        height: 150px;
+      }
+
+
+      .game-stage {
+        top: 26%;
+      }
+
+
+      .casino-panel {
+        padding-top: 15px;
+        padding-bottom: 20px;
+      }
+
+
+      .casino-panel h1 {
+        margin-bottom: 18px;
+      }
+
+
+      button {
+        margin-top: 30px;
+      }
+
+    }
+
+  </style>
 </head>
 
+
 <body>
+
+
+  <!-- ============================
+       TAP TO BEGIN
+  ============================= -->
 
   <div
     id="start-screen"
@@ -31,9 +1249,11 @@
 
     </div>
 
+
     <div class="start-title">
       COLOROULETTE
     </div>
+
 
     <div class="tap-text">
       TAP ANYWHERE TO BEGIN
@@ -41,10 +1261,23 @@
 
   </div>
 
+
+  <!-- ============================
+       COMPLETE SHOW
+  ============================= -->
+
   <main
     id="show"
     class="show"
   >
+
+
+    <!-- ==========================
+         ONE CONTINUOUS CAT
+
+         This cat stays alive for
+         the whole intro transition.
+    =========================== -->
 
     <div
       id="show-cat"
@@ -58,6 +1291,11 @@
 
     </div>
 
+
+    <!-- ==========================
+         WELCOME TEXT
+    =========================== -->
+
     <div
       id="welcome-copy"
       class="welcome-copy"
@@ -69,28 +1307,42 @@
         COLOROULETTE
       </div>
 
+
       <div class="welcome-subtitle">
         Stick around for one game.
       </div>
 
     </div>
 
+
+    <!-- ==========================
+         ROULETTE
+    =========================== -->
+
     <section
       id="game-stage"
       class="game-stage"
     >
 
+
+      <!-- CASINO MACHINE -->
+
       <div class="casino-panel">
 
         <h1>RGB</h1>
 
+
         <div class="machine">
+
+
+          <!-- RED -->
 
           <div class="reel-column">
 
             <div class="label">
               R
             </div>
+
 
             <div class="reel">
 
@@ -109,11 +1361,15 @@
 
           </div>
 
+
+          <!-- GREEN -->
+
           <div class="reel-column">
 
             <div class="label">
               G
             </div>
+
 
             <div class="reel">
 
@@ -132,11 +1388,15 @@
 
           </div>
 
+
+          <!-- BLUE -->
+
           <div class="reel-column">
 
             <div class="label">
               B
             </div>
+
 
             <div class="reel">
 
@@ -155,9 +1415,13 @@
 
           </div>
 
+
         </div>
 
       </div>
+
+
+      <!-- ROLL BUTTON -->
 
       <button
         id="roll-button"
@@ -167,7 +1431,13 @@
         ROLL
       </button>
 
+
     </section>
+
+
+    <!-- ==========================
+         COUNTDOWN PLAQUE
+    =========================== -->
 
     <div
       id="countdown"
@@ -178,6 +1448,7 @@
         DOUBLE CLICK
       </div>
 
+
       <div
         id="countdown-number"
         class="countdown-number"
@@ -187,22 +1458,31 @@
 
     </div>
 
+
   </main>
+
+
+  <!-- ============================
+       FINAL COLOR REVEAL
+  ============================= -->
 
   <div
     id="reveal-black"
     class="reveal-black"
   ></div>
 
+
   <div
     id="color-reveal"
     class="color-reveal"
   ></div>
 
+
   <div
     id="reveal-rgb"
     class="reveal-rgb"
   ></div>
+
 
   <div
     id="pictures-message"
@@ -211,37 +1491,1087 @@
     WAIT FOR YOUR PICTURES
   </div>
 
-<audio
-  id="timer-sound"
-  src="timer.mp3"
-  preload="auto">
-</audio>
+  <!-- ============================
+       ASMR SOUND EFFECTS
+  ============================= -->
 
-<audio
-  id="button-sound"
-  src="button.mp3"
-  preload="auto">
-</audio>
+  <audio id="timer-sound" src="timer.mp3" preload="auto"></audio>
+  <audio id="button-sound" src="button.mp3" preload="auto"></audio>
+  <audio id="tick-sound" src="reel-tick.mp3" preload="auto"></audio>
+  <audio id="landing-sound" src="reel-land.mp3" preload="auto"></audio>
+  <audio id="swoosh-sound" src="slow-swoosh.mp3" preload="auto"></audio>
 
-<audio
-  id="tick-sound"
-  src="reel-tick.mp3"
-  preload="auto">
-</audio>
 
-<audio
-  id="landing-sound"
-  src="reel-land.mp3"
-  preload="auto">
-</audio>
+  <script>
 
-<audio
-  id="swoosh-sound"
-  src="slow-swoosh.mp3"
-  preload="auto">
-</audio>
+    /* =============================
+       ELEMENTS
+    ============================= */
 
-  <script src="script.js"></script>
+    const ITEM_HEIGHT = 50;
+
+
+    const startScreen =
+      document.getElementById(
+        "start-screen"
+      );
+
+
+    const show =
+      document.getElementById(
+        "show"
+      );
+
+
+    const showCat =
+      document.getElementById(
+        "show-cat"
+      );
+
+
+    const welcomeCopy =
+      document.getElementById(
+        "welcome-copy"
+      );
+
+
+    const gameStage =
+      document.getElementById(
+        "game-stage"
+      );
+
+
+    const countdown =
+      document.getElementById(
+        "countdown"
+      );
+
+
+    const countdownNumber =
+      document.getElementById(
+        "countdown-number"
+      );
+
+
+    const redStrip =
+      document.getElementById(
+        "red-strip"
+      );
+
+
+    const greenStrip =
+      document.getElementById(
+        "green-strip"
+      );
+
+
+    const blueStrip =
+      document.getElementById(
+        "blue-strip"
+      );
+
+
+    const rollButton =
+      document.getElementById(
+        "roll-button"
+      );
+
+
+    const revealBlack =
+      document.getElementById(
+        "reveal-black"
+      );
+
+
+    const colorReveal =
+      document.getElementById(
+        "color-reveal"
+      );
+
+
+    const revealRGB =
+      document.getElementById(
+        "reveal-rgb"
+      );
+
+
+    const picturesMessage =
+      document.getElementById(
+        "pictures-message"
+      );
+
+
+    const timerSound =
+      document.getElementById(
+        "timer-sound"
+      );
+
+
+    const buttonSound =
+      document.getElementById(
+        "button-sound"
+      );
+
+
+    const tickSound =
+      document.getElementById(
+        "tick-sound"
+      );
+
+
+    const landingSound =
+      document.getElementById(
+        "landing-sound"
+      );
+
+
+    const swooshSound =
+      document.getElementById(
+        "swoosh-sound"
+      );
+
+
+    timerSound.volume = 0.38;
+    buttonSound.volume = 0.58;
+    tickSound.volume = 0.28;
+    landingSound.volume = 0.48;
+    swooshSound.volume = 0.32;
+
+
+    function playSound(
+      audio,
+      playbackRate = 1,
+      volume = null
+    ) {
+
+      const sound =
+        audio.cloneNode(true);
+
+      sound.playbackRate =
+        playbackRate;
+
+      sound.volume =
+        volume === null
+          ? audio.volume
+          : volume;
+
+      sound.play().catch(
+        () => {}
+      );
+
+    }
+    let showStarted = false;
+
+
+    /* =============================
+       TAP ANYWHERE TO START
+    ============================= */
+
+    startScreen.addEventListener(
+      "click",
+      startShow
+    );
+
+
+    function startShow() {
+
+      if (showStarted) {
+        return;
+      }
+
+
+      showStarted = true;
+      /*
+         Hide tap screen.
+      */
+
+      startScreen.classList.add(
+        "hidden"
+      );
+
+
+      /*
+         Reveal main show.
+      */
+
+      show.classList.add(
+        "active"
+      );
+
+
+      /*
+         Welcome text appears.
+
+         The cat is already visible
+         and remains the SAME cat.
+      */
+
+      setTimeout(
+        () => {
+
+          welcomeCopy.classList.add(
+            "visible"
+          );
+
+        },
+        250
+      );
+
+
+      /*
+         Hold welcome long enough
+         to comfortably read it.
+      */
+
+      setTimeout(
+        () => {
+
+          beginMachineEntrance();
+
+        },
+        3000
+      );
+
+    }
+
+
+    /* =============================
+       WELCOME -> MACHINE
+
+       NO CAT DISAPPEARANCE.
+
+       Same cat moves continuously
+       into final position.
+    ============================= */
+
+    function beginMachineEntrance() {
+
+      /*
+         Fade only the TEXT.
+
+         The cat remains completely
+         visible.
+      */
+
+      welcomeCopy.classList.add(
+        "leaving"
+      );
+
+
+      /*
+         SAME cat now smoothly
+         shrinks and travels upward.
+      */
+
+      showCat.classList.add(
+        "game-position"
+      );
+
+
+      /*
+         Machine begins appearing
+         underneath while cat moves.
+      */
+
+      setTimeout(
+        () => {
+
+          gameStage.classList.add(
+            "visible"
+          );
+
+        },
+        300
+      );
+
+
+      /*
+         Cat movement lasts 1.4 sec.
+
+         After movement finishes,
+         give machine roughly
+         1 second of stillness.
+      */
+
+      setTimeout(
+        () => {
+
+          startCountdown();
+
+        },
+        2400
+      );
+
+    }
+
+
+    /* =============================
+       COUNTDOWN NUMBER ANIMATION
+    ============================= */
+
+    function showCountdownNumber(
+      number
+    ) {
+
+      countdownNumber.textContent =
+        number;
+
+
+      countdownNumber.classList.remove(
+        "pop"
+      );
+
+
+      /*
+         Restart animation for
+         each number.
+      */
+
+      void countdownNumber.offsetWidth;
+
+
+      countdownNumber.classList.add(
+        "pop"
+      );
+
+    }
+
+
+    /* =============================
+       DOUBLE CLICK
+       3...2...1
+    ============================= */
+
+    function startCountdown() {
+
+      countdown.classList.add(
+        "active"
+      );
+
+
+      showCountdownNumber(3);
+
+
+      timerSound.currentTime = 0;
+      timerSound.play().catch(
+        () => {}
+      );
+
+
+      setTimeout(
+        () => {
+
+          showCountdownNumber(2);
+
+        },
+        1000
+      );
+
+
+      setTimeout(
+        () => {
+
+          showCountdownNumber(1);
+
+        },
+        2000
+      );
+
+
+      /*
+         Countdown ends.
+
+         Plaque disappears.
+         Ruby button presses itself.
+         Reels begin.
+      */
+
+      setTimeout(
+        () => {
+
+          countdown.classList.remove(
+            "active"
+          );
+
+
+          timerSound.pause();
+          timerSound.currentTime = 0;
+
+
+          playSound(
+            buttonSound,
+            1,
+            0.58
+          );
+
+
+          rollButton.classList.add(
+            "pressed"
+          );
+
+
+          setTimeout(
+            () => {
+
+              rollButton.classList.remove(
+                "pressed"
+              );
+
+
+              setTimeout(
+                () => {
+
+                  spinRGB();
+
+                },
+                80
+              );
+
+            },
+            180
+          );
+
+        },
+        3000
+      );
+
+    }
+
+
+    /* =============================
+       RANDOM RGB
+
+       0 through 255
+    ============================= */
+
+    function randomRGB() {
+
+      return Math.floor(
+        Math.random() * 256
+      );
+
+    }
+
+
+    /* =============================
+       THREE DIGIT FORMAT
+    ============================= */
+
+    function formatNumber(
+      number
+    ) {
+
+      return String(number)
+        .padStart(
+          3,
+          "0"
+        );
+
+    }
+
+
+    /* =============================
+       BUILD REEL
+    ============================= */
+
+    function buildReel(
+      strip,
+      finalNumber
+    ) {
+
+      strip.innerHTML = "";
+
+
+      const values = [];
+
+
+      values.push(
+        randomRGB(),
+        randomRGB(),
+        randomRGB()
+      );
+
+
+      for (
+        let i = 0;
+        i < 55;
+        i++
+      ) {
+
+        values.push(
+          randomRGB()
+        );
+
+      }
+
+
+      /*
+         Genuine final number.
+      */
+
+      values.push(
+        finalNumber
+      );
+
+
+      /*
+         One number below result.
+      */
+
+      values.push(
+        randomRGB()
+      );
+
+
+      values.forEach(
+        value => {
+
+          const number =
+            document.createElement(
+              "div"
+            );
+
+
+          number.className =
+            "reel-number";
+
+
+          number.textContent =
+            formatNumber(
+              value
+            );
+
+
+          strip.appendChild(
+            number
+          );
+
+        }
+      );
+
+
+      return values.length;
+
+    }
+
+
+    /* =============================
+       SPIN ONE REEL
+    ============================= */
+
+    function spinReel(
+      strip,
+      finalNumber,
+      fastSpinDuration,
+      onFinished
+    ) {
+
+      const itemCount =
+        buildReel(
+          strip,
+          finalNumber
+        );
+
+
+      const finalIndex =
+        itemCount - 2;
+
+
+      const finalPosition =
+        50 -
+        (
+          finalIndex *
+          ITEM_HEIGHT
+        );
+
+
+      let position = 50;
+
+
+      let velocity = 38;
+
+
+      const startTime =
+        performance.now();
+
+
+      let lastTickTime = 0;
+
+
+      function maybePlayTick(
+        now,
+        progress = 0
+      ) {
+
+        /*
+           Fast at first, then gradually
+           more space between ticks.
+        */
+
+        const minimumGap =
+          70 +
+          (
+            progress *
+            155
+          );
+
+
+        if (
+          now - lastTickTime >=
+          minimumGap
+        ) {
+
+          lastTickTime = now;
+
+
+          const rate =
+            1.06 -
+            (
+              progress *
+              0.16
+            );
+
+
+          const volume =
+            0.20 +
+            (
+              progress *
+              0.10
+            );
+
+
+          playSound(
+            tickSound,
+            rate,
+            volume
+          );
+
+        }
+
+      }
+
+
+      /* ===========================
+         FAST SPIN
+      =========================== */
+
+      function fastSpin(now) {
+
+        const elapsed =
+          now - startTime;
+
+
+        position += velocity;
+
+
+        if (
+          position > 0
+        ) {
+
+          position -= 1000;
+
+        }
+
+
+        strip.style.transform =
+          `translateY(${position}px)`;
+
+
+        strip.style.filter =
+          "blur(1.6px)";
+
+
+        maybePlayTick(
+          now,
+          0
+        );
+
+
+        if (
+          elapsed <
+          fastSpinDuration
+        ) {
+
+          requestAnimationFrame(
+            fastSpin
+          );
+
+        }
+
+        else {
+
+          beginLanding();
+
+        }
+
+      }
+
+
+      /* ===========================
+         SMOOTH LANDING
+      =========================== */
+
+      function beginLanding() {
+
+        const landingStart =
+          position;
+
+
+        const landingDuration =
+          1800;
+
+
+        const landingStartTime =
+          performance.now();
+
+
+        function land(now) {
+
+          const elapsed =
+            now -
+            landingStartTime;
+
+
+          let progress =
+            elapsed /
+            landingDuration;
+
+
+          if (
+            progress > 1
+          ) {
+
+            progress = 1;
+
+          }
+
+
+          maybePlayTick(
+            now,
+            progress
+          );
+
+
+          const eased =
+            1 -
+            Math.pow(
+              1 - progress,
+              3
+            );
+
+
+          const currentPosition =
+            landingStart +
+            (
+              finalPosition -
+              landingStart
+            ) *
+            eased;
+
+
+          strip.style.transform =
+            `translateY(${currentPosition}px)`;
+
+
+          const blur =
+            1.6 *
+            (
+              1 - progress
+            );
+
+
+          strip.style.filter =
+            `blur(${blur}px)`;
+
+
+          if (
+            progress < 1
+          ) {
+
+            requestAnimationFrame(
+              land
+            );
+
+          }
+
+          else {
+
+            settle();
+
+          }
+
+        }
+
+
+        requestAnimationFrame(
+          land
+        );
+
+      }
+
+
+      /* ===========================
+         LITTLE END BOUNCE
+      =========================== */
+
+      function settle() {
+
+        playSound(
+          landingSound,
+          0.94,
+          0.48
+        );
+
+
+        strip.style.transition =
+          "transform 120ms ease-out";
+
+
+        strip.style.transform =
+          `translateY(${finalPosition + 5}px)`;
+
+
+        setTimeout(
+          () => {
+
+            strip.style.transition =
+              "transform 130ms ease-in-out";
+
+
+            strip.style.transform =
+              `translateY(${finalPosition}px)`;
+
+
+            strip.style.filter =
+              "blur(0px)";
+
+
+            setTimeout(
+              () => {
+
+                strip.style.transition =
+                  "none";
+
+
+                if (
+                  onFinished
+                ) {
+
+                  onFinished();
+
+                }
+
+              },
+              150
+            );
+
+          },
+          120
+        );
+
+      }
+
+
+      strip.style.transition =
+        "none";
+
+
+      requestAnimationFrame(
+        fastSpin
+      );
+
+    }
+
+
+    /* =============================
+       SPIN RGB
+    ============================= */
+
+    function spinRGB() {
+
+      /*
+         Genuine random result.
+      */
+
+      const finalRed =
+        randomRGB();
+
+
+      const finalGreen =
+        randomRGB();
+
+
+      const finalBlue =
+        randomRGB();
+
+
+      /*
+         RED stops first.
+      */
+
+      spinReel(
+        redStrip,
+        finalRed,
+        1900
+      );
+
+
+      /*
+         GREEN stops second.
+      */
+
+      spinReel(
+        greenStrip,
+        finalGreen,
+        2600
+      );
+
+
+      /*
+         BLUE stops last.
+      */
+
+      spinReel(
+        blueStrip,
+        finalBlue,
+        3300,
+
+        function() {
+
+          console.log(
+            "RGB:",
+            finalRed,
+            finalGreen,
+            finalBlue
+          );
+
+
+          /*
+             Hold the finished roulette
+             result for 0.7 seconds.
+          */
+
+          setTimeout(
+            () => {
+
+              const finalColor =
+                `rgb(${finalRed}, ${finalGreen}, ${finalBlue})`;
+
+
+              colorReveal.style.background =
+                finalColor;
+
+
+              revealRGB.textContent =
+                `RGB(${finalRed}, ${finalGreen}, ${finalBlue})`;
+
+
+              /*
+                 STEP 1:
+                 Fade the roulette smoothly
+                 into a pure black screen.
+              */
+
+              revealBlack.classList.add(
+                "active"
+              );
+
+
+              /*
+                 STEP 2:
+                 Once the screen is black,
+                 gently reveal the RGB value
+                 in the exact center.
+              */
+
+              setTimeout(
+                () => {
+
+                  revealRGB.classList.add(
+                    "active"
+                  );
+
+                },
+                900
+              );
+
+
+              /*
+                 STEP 3:
+                 Hold the RGB value on black,
+                 then show the generated color
+                 as a tiny round dot.
+              */
+
+              setTimeout(
+                () => {
+
+                  colorReveal.classList.add(
+                    "dot"
+                  );
+
+                },
+                1900
+              );
+
+
+              /*
+                 STEP 4:
+                 Let the dot exist briefly,
+                 then very slowly expand it
+                 as a perfect circle.
+
+                 CSS controls the expansion:
+                 8000ms = 8 seconds.
+              */
+
+              setTimeout(
+                () => {
+
+                  playSound(
+                    swooshSound,
+                    1,
+                    0.32
+                  );
+
+
+                  colorReveal.classList.add(
+                    "active"
+                  );
+
+
+                  /*
+                     As the swoosh/color expansion
+                     is already underway, subtly
+                     fade in the retention message
+                     underneath the RGB result.
+                  */
+
+                  setTimeout(
+                    () => {
+
+                      picturesMessage.classList.add(
+                        "active"
+                      );
+
+                    },
+                    550
+                  );
+
+                },
+                2350
+              );
+
+            },
+            700
+          );
+
+        }
+      );
+
+    }
+
+  </script>
 
 </body>
 
