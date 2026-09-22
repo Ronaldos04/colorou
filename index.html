@@ -1746,6 +1746,82 @@
 
 
     /*
+       MOBILE AUDIO UNLOCK
+
+       iOS Safari (and many mobile
+       browsers) only allow a sound
+       to play if its very FIRST
+       play() call happens directly
+       and synchronously inside a
+       real user tap/click.
+
+       Our sounds actually fire
+       several seconds later, from
+       inside chained setTimeout
+       calls - which iOS does NOT
+       count as "part of" the tap.
+       Without this step, iOS
+       silently blocks every sound.
+
+       The fix: the instant the
+       user taps to start, we
+       synchronously play() and
+       immediately pause() every
+       pooled clone. That "unlocks"
+       each individual element for
+       the rest of the session, so
+       later play() calls (even
+       from setTimeout) work fine.
+
+       This must be called directly
+       inside the click handler,
+       not inside any setTimeout.
+    */
+
+    function unlockAllSounds() {
+
+      Object.values(
+        soundPools
+      ).forEach(
+        pool => {
+
+          pool.forEach(
+            sound => {
+
+              const playPromise =
+                sound.play();
+
+
+              if (
+                playPromise &&
+                playPromise.then
+              ) {
+
+                playPromise.then(
+                  () => {
+
+                    sound.pause();
+
+
+                    sound.currentTime = 0;
+
+                  }
+                ).catch(
+                  () => {}
+                );
+
+              }
+
+            }
+          );
+
+        }
+      );
+
+    }
+
+
+    /*
        Plays a sound from its pool.
 
        name         - key in soundTemplates / soundPools
@@ -1847,6 +1923,16 @@
 
 
       showStarted = true;
+
+
+      /*
+         Must happen synchronously
+         inside this tap, not inside
+         any setTimeout below - see
+         unlockAllSounds() above.
+      */
+
+      unlockAllSounds();
 
 
       /*
