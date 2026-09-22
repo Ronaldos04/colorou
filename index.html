@@ -1493,6 +1493,16 @@
 
   <!-- ============================
        ASMR SOUND EFFECTS
+
+       These stay as plain <audio>
+       tags because file:// pages
+       can load audio files this
+       way, but cannot use fetch()
+       to load them for Web Audio.
+
+       Each one is used only as a
+       template - see the pooling
+       setup in the script below.
   ============================= -->
 
   <audio id="timer-sound" src="timer.mp3" preload="auto"></audio>
@@ -1601,65 +1611,221 @@
       );
 
 
-    const timerSound =
-      document.getElementById(
-        "timer-sound"
+    /* =============================
+       POOLED SOUND ENGINE
+
+       Why a pool:
+
+       The original code called
+       audio.cloneNode(true) fresh
+       EVERY time a sound played.
+       Building a brand new clone
+       at play-time is what caused
+       the random delay - it's real
+       setup work, and under any
+       system load it could stall.
+
+       Fetch-based Web Audio would
+       avoid that, but file:// pages
+       can't use fetch() to load
+       local files, so that's out.
+
+       The fix: build a small set
+       of clones for each sound
+       ONCE, up front, right after
+       the page loads. From then
+       on, playing a sound just
+       reuses the next clone in
+       that sound's pool (round
+       robin) instead of creating
+       anything new - so there is
+       no setup work left to do
+       at the moment it plays.
+
+       Tick gets a bigger pool
+       since it fires rapidly and
+       overlaps with itself during
+       every spin.
+    ============================= */
+
+    const soundTemplates = {
+      timer: document.getElementById("timer-sound"),
+      button: document.getElementById("button-sound"),
+      tick: document.getElementById("tick-sound"),
+      landing: document.getElementById("landing-sound"),
+      swoosh: document.getElementById("swoosh-sound")
+    };
+
+
+    const soundVolumes = {
+      timer: 0.38,
+      button: 0.58,
+      tick: 0.28,
+      landing: 0.48,
+      swoosh: 0.55
+    };
+
+
+    const poolSizes = {
+      timer: 2,
+      button: 3,
+      tick: 12,
+      landing: 3,
+      swoosh: 2
+    };
+
+
+    const soundPools = {};
+
+    const poolIndexes = {};
+
+
+    function buildPools() {
+
+      Object.keys(
+        soundTemplates
+      ).forEach(
+        name => {
+
+          const template =
+            soundTemplates[name];
+
+
+          const size =
+            poolSizes[name];
+
+
+          const pool = [];
+
+
+          for (
+            let i = 0;
+            i < size;
+            i++
+          ) {
+
+            const clone =
+              template.cloneNode(
+                true
+              );
+
+
+            clone.volume =
+              soundVolumes[name];
+
+
+            /*
+               Load it now so it is
+               ready the first time
+               it is actually needed.
+            */
+
+            clone.load();
+
+
+            pool.push(
+              clone
+            );
+
+          }
+
+
+          soundPools[name] =
+            pool;
+
+
+          poolIndexes[name] = 0;
+
+        }
       );
 
-
-    const buttonSound =
-      document.getElementById(
-        "button-sound"
-      );
+    }
 
 
-    const tickSound =
-      document.getElementById(
-        "tick-sound"
-      );
+    buildPools();
 
 
-    const landingSound =
-      document.getElementById(
-        "landing-sound"
-      );
+    /*
+       Plays a sound from its pool.
 
+       name         - key in soundTemplates / soundPools
+       playbackRate - speed / pitch multiplier
+       volume       - 0 to 1, defaults to the sound's
+                      base volume above
 
-    const swooshSound =
-      document.getElementById(
-        "swoosh-sound"
-      );
-
-
-    timerSound.volume = 0.38;
-    buttonSound.volume = 0.58;
-    tickSound.volume = 0.28;
-    landingSound.volume = 0.48;
-    swooshSound.volume = 0.32;
-
+       Returns the <audio> element used, so callers
+       that need to stop a sound early (the countdown
+       timer) can hang onto it.
+    */
 
     function playSound(
-      audio,
+      name,
       playbackRate = 1,
       volume = null
     ) {
 
+      const pool =
+        soundPools[name];
+
+
+      if (
+        !pool ||
+        pool.length === 0
+      ) {
+
+        return null;
+
+      }
+
+
+      const index =
+        poolIndexes[name];
+
+
       const sound =
-        audio.cloneNode(true);
+        pool[index];
+
+
+      poolIndexes[name] =
+        (
+          index + 1
+        ) %
+        pool.length;
+
+
+      sound.currentTime = 0;
+
 
       sound.playbackRate =
         playbackRate;
 
+
       sound.volume =
         volume === null
-          ? audio.volume
+          ? soundVolumes[name]
           : volume;
+
 
       sound.play().catch(
         () => {}
       );
 
+
+      return sound;
+
     }
+
+
+    /*
+       Holds the currently playing
+       countdown timer sound so it
+       can be stopped early once
+       the countdown finishes.
+    */
+
+    let activeTimerSource = null;
+
+
     let showStarted = false;
 
 
@@ -1681,6 +1847,8 @@
 
 
       showStarted = true;
+
+
       /*
          Hide tap screen.
       */
@@ -1852,10 +2020,12 @@
       showCountdownNumber(3);
 
 
-      timerSound.currentTime = 0;
-      timerSound.play().catch(
-        () => {}
-      );
+      activeTimerSource =
+        playSound(
+          "timer",
+          1,
+          soundVolumes.timer
+        );
 
 
       setTimeout(
@@ -1894,12 +2064,24 @@
           );
 
 
-          timerSound.pause();
-          timerSound.currentTime = 0;
+          if (
+            activeTimerSource
+          ) {
+
+            activeTimerSource.pause();
+
+
+            activeTimerSource.currentTime = 0;
+
+
+            activeTimerSource =
+              null;
+
+          }
 
 
           playSound(
-            buttonSound,
+            "button",
             1,
             0.58
           );
@@ -2141,7 +2323,7 @@
 
 
           playSound(
-            tickSound,
+            "tick",
             rate,
             volume
           );
@@ -2317,7 +2499,7 @@
       function settle() {
 
         playSound(
-          landingSound,
+          "landing",
           0.94,
           0.48
         );
@@ -2529,9 +2711,9 @@
                 () => {
 
                   playSound(
-                    swooshSound,
+                    "swoosh",
                     1,
-                    0.32
+                    0.55
                   );
 
 
