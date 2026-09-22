@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0, viewport-fit=cover"
+  >
+
+  <title>Coloroulette</title>
+
+    <link rel="stylesheet" href="style.css">
+
+</head>
+
+<body>
+
+  <div
+    id="start-screen"
+    class="start-screen"
+  >
+
+    <div class="intro-cat">
+
+      <img
+        src="golden-cat.png"
+        alt="Golden Crowned Cat"
+      >
+
+    </div>
+
+    <div class="start-title">
+      COLOROULETTE
+    </div>
+
+    <div class="tap-text">
+      TAP ANYWHERE TO BEGIN
+    </div>
+
+  </div>
+
+  <main
+    id="show"
+    class="show"
+  >
+
+    <div
+      id="show-cat"
+      class="show-cat"
+    >
+
+      <img
+        src="golden-cat.png"
+        alt="Golden Crowned Cat"
+      >
+
+    </div>
+
+    <div
+      id="welcome-copy"
+      class="welcome-copy"
+    >
+
+      <div class="welcome-title">
+        WELCOME TO
+        <br>
+        COLOROULETTE
+      </div>
+
+      <div class="welcome-subtitle">
+        Stick around for one game.
+      </div>
+
+    </div>
+
+    <section
+      id="game-stage"
+      class="game-stage"
+    >
+
+      <div class="casino-panel">
+
+        <h1>RGB</h1>
+
+        <div class="machine">
+
+          <div class="reel-column">
+
+            <div class="label">
+              R
+            </div>
+
+            <div class="reel">
+
+              <div
+                class="reel-strip"
+                id="red-strip"
+              ></div>
+
+              <div class="selection-box"></div>
+
+              <div class="fade-top"></div>
+
+              <div class="fade-bottom"></div>
+
+            </div>
+
+          </div>
+
+          <div class="reel-column">
+
+            <div class="label">
+              G
+            </div>
+
+            <div class="reel">
+
+              <div
+                class="reel-strip"
+                id="green-strip"
+              ></div>
+
+              <div class="selection-box"></div>
+
+              <div class="fade-top"></div>
+
+              <div class="fade-bottom"></div>
+
+            </div>
+
+          </div>
+
+          <div class="reel-column">
+
+            <div class="label">
+              B
+            </div>
+
+            <div class="reel">
+
+              <div
+                class="reel-strip"
+                id="blue-strip"
+              ></div>
+
+              <div class="selection-box"></div>
+
+              <div class="fade-top"></div>
+
+              <div class="fade-bottom"></div>
+
+            </div>
+
+          </div>
+
+        </div>
+
+      </div>
+
+      <button
+        id="roll-button"
+        type="button"
+        tabindex="-1"
+      >
+        ROLL
+      </button>
+
+    </section>
+
+    <div
+      id="countdown"
+      class="countdown"
+    >
+
+      <div class="countdown-title">
+        DOUBLE CLICK
+      </div>
+
+      <div
+        id="countdown-number"
+        class="countdown-number"
+      >
+        3
+      </div>
+
+    </div>
+
+  </main>
+
+  <div
+    id="reveal-black"
+    class="reveal-black"
+  ></div>
+
+  <div
+    id="color-reveal"
+    class="color-reveal"
+  ></div>
+
+  <div
+    id="reveal-rgb"
+    class="reveal-rgb"
+  ></div>
+
+  <div
+    id="pictures-message"
+    class="pictures-message"
+  >
+    WAIT FOR YOUR PICTURES
+  </div>
+
+<audio
+  id="timer-sound"
+  src="https://raw.githubusercontent.com/Ronaldos04/colorou/main/timer.mp3"
+  preload="auto">
+
+</audio>  
+<audio
+  id="button-sound"
+  src="https://raw.githubusercontent.com/Ronaldos04/colorou/main/button.mp3"
+  preload="auto">
+</audio>
+
+<audio
+  id="tick-sound"
+  src="https://raw.githubusercontent.com/Ronaldos04/colorou/main/reel-tick.mp3"
+  preload="auto">
+</audio>
+
+<audio
+  id="landing-sound"
+  src="https://raw.githubusercontent.com/Ronaldos04/colorou/main/reel-land.mp3"
+  preload="auto">
+</audio>
+
+<audio
+  id="swoosh-sound"
+  src="https://raw.githubusercontent.com/Ronaldos04/colorou/main/slow-swoosh.mp3"
+  preload="auto">
+</audio>
+
+  <script src="script.js"></script>
+
+</body>
+
+</html>
