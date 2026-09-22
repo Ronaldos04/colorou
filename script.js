@@ -75,64 +75,72 @@ const ITEM_HEIGHT = 50;
         "pictures-message"
       );
 
-    const timerSound =
-      document.getElementById(
-        "timer-sound"
-      );
+    const audioFiles = {
+      timer: "timer.mp3",
+      button: "button.mp3",
+      tick: "reel-tick.mp3",
+      landing: "reel-land.mp3",
+      swoosh: "slow-swoosh.mp3"
+    };
 
-    const buttonSound =
-      document.getElementById(
-        "button-sound"
-      );
+    let audioContext = null;
+    const audioBuffers = {};
 
-    const tickSound =
-      document.getElementById(
-        "tick-sound"
-      );
+    async function initializeAudio() {
+      if (!audioContext) {
+        audioContext = new (window.AudioContext || window.webkitAudioContext)();
+      }
 
-    const landingSound =
-      document.getElementById(
-        "landing-sound"
-      );
+      if (audioContext.state === "suspended") {
+        await audioContext.resume();
+      }
 
-    const swooshSound =
-      document.getElementById(
-        "swoosh-sound"
-      );
+      const entries = Object.entries(audioFiles);
 
-    timerSound.volume = 0.38;
-    buttonSound.volume = 0.58;
-    tickSound.volume = 0.28;
-    landingSound.volume = 0.48;
-    swooshSound.volume = 0.32;
+      await Promise.all(
+        entries.map(
+          async ([name, url]) => {
+            if (audioBuffers[name]) {
+              return;
+            }
+
+            const response = await fetch(url);
+            const arrayBuffer = await response.arrayBuffer();
+            audioBuffers[name] = await audioContext.decodeAudioData(arrayBuffer);
+          }
+        )
+      );
+    }
 
     function playSound(
-      audio,
+      name,
       playbackRate = 1,
-      volume = null
+      volume = 1
     ) {
+      if (!audioContext || !audioBuffers[name]) {
+        return;
+      }
 
-      const sound =
-        audio.cloneNode(true);
+      const source = audioContext.createBufferSource();
+      const gain = audioContext.createGain();
 
-      sound.playbackRate =
-        playbackRate;
+      source.buffer = audioBuffers[name];
+      source.playbackRate.value = playbackRate;
+      gain.gain.value = volume;
 
-      sound.volume =
-        volume === null
-          ? audio.volume
-          : volume;
-
-      sound.play().catch(
-        () => {}
-      );
-
+      source.connect(gain);
+      gain.connect(audioContext.destination);
+      source.start(0);
     }
+
     let showStarted = false;
 
    startScreen.addEventListener(
       "click",
-      startShow
+      () => {
+        initializeAudio();
+        startShow();
+      }
     );
 
     function startShow() {
@@ -232,9 +240,10 @@ const ITEM_HEIGHT = 50;
 
       showCountdownNumber(3);
 
-      timerSound.currentTime = 0;
-      timerSound.play().catch(
-        () => {}
+      playSound(
+        "timer",
+        1,
+        0.38
       );
 
       setTimeout(
@@ -262,11 +271,8 @@ const ITEM_HEIGHT = 50;
             "active"
           );
 
-          timerSound.pause();
-          timerSound.currentTime = 0;
-
           playSound(
-            buttonSound,
+            "button",
             1,
             0.58
           );
@@ -449,7 +455,7 @@ const ITEM_HEIGHT = 50;
             );
 
           playSound(
-            tickSound,
+            "tick",
             rate,
             volume
           );
@@ -591,7 +597,7 @@ const ITEM_HEIGHT = 50;
       function settle() {
 
         playSound(
-          landingSound,
+          "landing",
           0.94,
           0.48
         );
@@ -726,7 +732,7 @@ const ITEM_HEIGHT = 50;
                 () => {
 
                   playSound(
-                    swooshSound,
+                    "swoosh",
                     1,
                     0.32
                   );
