@@ -131,19 +131,9 @@ const ITEM_HEIGHT = 50;
     let showStarted = false;
 
    startScreen.addEventListener(
-  "click",
-  () => {
-    timerSound.currentTime = 0;
-
-    timerSound.play().catch(
-      error => {
-        alert("Audio failed: " + error.message);
-      }
+      "click",
+      startShow
     );
-
-    startShow();
-  }
-);
 
     function startShow() {
 
